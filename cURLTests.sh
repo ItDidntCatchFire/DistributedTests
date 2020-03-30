@@ -4,7 +4,7 @@ local=0
 UserOneAPIKey=""
 UserTwoAPIKey=""
 Expected=""
-codeForServer= # Put your code for test server here
+codeForServer=$(<CodeForServer.txt)
 
 if [ $# -eq 0 ]
  then
@@ -14,7 +14,9 @@ if [ $# -eq 0 ]
 	 then
 		printf "Cleared"
 	 else
-		printf "Can't clear"
+		printf "Can't clear have you set your code for the server?\n"
+		printf "Given server code:"
+		cat CodeForServer.txt
 		exit
 	fi
 	
@@ -27,13 +29,13 @@ if [ $# -eq 0 ]
 	dotnet build
 	
     # go to the database and reset it
-	cd Data
+	cd DistSysACW
 	export PATH="$PATH:$HOME/.dotnet/tools/" 
 	dotnet ef database drop -f 
 	dotnet ef database update
     
     #Go to the server and run it
-	cd ../DistSysACW
+	
 	dotnet run --no-build > /dev/null &
 	PROC_ID=$!
 	sleep 2
