@@ -35,7 +35,7 @@ if [ $# -eq 0 ]
 	dotnet ef database update
     
     #Go to the server and run it
-	Remove
+	
 	dotnet run --no-build > /dev/null &
 	PROC_ID=$!
 	sleep 2
