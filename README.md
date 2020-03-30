@@ -1,5 +1,5 @@
 # DistributedTests
-A test script for Hull Uni Distributed systems coursework 2019
+A test script for Hull Uni Distributed systems coursework 2020
 This currently only tests the servers functionality but the client might be added eventually.
 
 **This will recreate your database whenever it is run!!**
@@ -21,3 +21,12 @@ If you are using git then you will need to add this repo as a submodule with `gi
 
 It should look like this when you have finished
 ![Test folder location](https://cdn.discordapp.com/attachments/690586605064552459/693999547378171945/unknown.png)
+
+## How to use
+- Go to the DistributedTests Folder
+- Open CodeForServer.txt and put your number in there 
+- Put `./curlTests.sh` in into the command line
+- This will run the test script against the test server and then your own server
+- If you want to run it only aginst your own server then put `./curlTests.sh 1` to run the test script instead
+- The test script will tell you what your server returned and what it was expecting
+- If you run into any problems raise them as an issue on this repo don't @ me in the discord
