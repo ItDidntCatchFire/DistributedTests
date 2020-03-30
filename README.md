@@ -2,7 +2,7 @@
 A test script for Hull Uni Distributed systems coursework 2020
 This currently only tests the servers functionality but the client might be added eventually.
 
-**This will recreate your database whenever it is run!!**
+**This will drop and rebuild your database whenever it is run!!**
 **Passing these tests does not guarantee anything**
 
 **John is cool with you using it :)**
