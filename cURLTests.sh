@@ -29,13 +29,13 @@ if [ $# -eq 0 ]
 	dotnet build
 	
     # go to the database and reset it
-	cd DistSysACW
+	cd Data #                                                                                                               cd DistSysACW
 	export PATH="$PATH:$HOME/.dotnet/tools/" 
 	dotnet ef database drop -f 
 	dotnet ef database update
     
     #Go to the server and run it
-	
+	cd ../DistSysACW #                                                                                                      Remove
 	dotnet run --no-build > /dev/null &
 	PROC_ID=$!
 	sleep 2
