@@ -4,7 +4,7 @@ local=0
 UserOneAPIKey=""
 UserTwoAPIKey=""
 Expected=""
-codeForServer=8285836 # Put your code for test server here
+codeForServer= # Put your code for test server here
 
 if [ $# -eq 0 ]
  then
@@ -53,9 +53,13 @@ function error()
 	 then
 		kill $PROC_ID
 	 fi
-	
-	printf "ERROR\n"
-	printf "What actually came back\n"
+	if [[ $Expected != $var ]]
+    then
+        printf "Expected\n\t"
+        printf '%s\n' "${Expected}"
+        printf "\n"
+    fi
+	printf "What actually came back\n\t"
 	cat results.txt
 	exit 1
 }
@@ -65,8 +69,9 @@ printf "\tHello World\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}talkback/hello) == 200 ]]
 then 
     var=$(<results.txt)
-    if [[ "Hello World" != $var ]] && [[ "hello world" != $var ]]
-	then
+    Expected="Hello World"
+    if [[ $Expected != $var ]]
+    then
         printf "Failed \n"
 		kill -1 $$
     fi;  
@@ -79,7 +84,8 @@ printf "\tSort working\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}'talkback/sort?integers=8&integers=2&integers=5' ) == 200 ]]
 then 
     var=$(<results.txt)
-    if [ "[2,5,8]" != $var ]
+    Expected="[2,5,8]"
+    if [ $Expected != $var ]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -93,7 +99,8 @@ printf "\tSort empty\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}'talkback/sort?' ) == 200 ]] 
 then 
     var=$(<results.txt)
-    if [ "[]" != $var ]
+    Expected="[]"
+    if [ $Expected != $var ]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -107,7 +114,8 @@ printf "\tSort NaN\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}'talkback/sort?integers=8&integers=2&integers=a' ) == 400 ]]
 then 
     var=$(<results.txt)
-    if [[ $var != "Bad Request" ]]
+    Expected="Bad Request"
+    if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -122,7 +130,8 @@ printf "\tNo username Passed\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}user/new?username=) == 200 ]]
 then 
     var=$(<results.txt)
-    if [[ "\"False - User Does Not Exist! Did you mean to do a POST to create a new user?\"" != "$var" ]]
+    Expected="\"False - User Does Not Exist! Did you mean to do a POST to create a new user?\""
+    if [[ $Expected != "$var" ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -136,7 +145,8 @@ printf "\tUser that does not Exist\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}user/new?username=UserOne) == 200 ]]
 then 
     var=$(<results.txt)
-    if [[ "\"False - User Does Not Exist! Did you mean to do a POST to create a new user?\"" != $var ]]
+    Expected="\"False - User Does Not Exist! Did you mean to do a POST to create a new user?\""
+    if [[ $Expected != "$var" ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -161,7 +171,8 @@ printf "\tUser that does Exist\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}user/new?username=UserOne) == 200 ]]
 then 
     var=$(<results.txt)
-    if [[ "\"True - User Does Exist! Did you mean to do a POST to create a new user?\"" != $var ]]
+    Expected="\"True - User Does Exist! Did you mean to do a POST to create a new user?\""
+    if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -175,7 +186,8 @@ printf "\tAdding Existing username 'UserOne'\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/new -H 'Content-Type: application/json' -d '"UserOne"') == 403 ]]
 then 
 	var=$(<results.txt)
-	if [[ "\"Oops. This username is already in use. Please try again with a new username.\"" != $var ]] && [[ "Oops. This username is already in use. Please try again with a new username." != $var ]]
+	Expected="Oops. This username is already in use. Please try again with a new username."
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -189,8 +201,9 @@ printf "\tAdding no username\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/new -H 'Content-Type: application/json' -d '') == 400 ]]
 then 
 	var=$(<results.txt)
-	if [[ "Oops. Make sure your body contains a string with your username and your Content-Type is Content-Type:application/json" != $var ]] && [[ "\"Oops. Make sure your body contains a string with your username and your Content-Type is Content-Type:application/json\"" != $var ]]
-	then
+	Expected="Oops. Make sure your body contains a string with your username and your Content-Type is Content-Type:application/json"
+    if [[ $Expected != $var ]]
+    then
         printf "Failed \n"
 		kill -1 $$
     fi;  
@@ -214,7 +227,8 @@ printf "\tDeleting a user (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -X DELETE -w '%{http_code}' ${host}user/RemoveUser?username=UserOne -H 'ApiKey: '$UserOneAPIKey'h') == 401 ]]
 then 
 	var=$(<results.txt)
-	if [[ "\"Unauthorized. Check ApiKey in Header is correct."\" != $var ]]
+	Expected="\"Unauthorized. Check ApiKey in Header is correct."\"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -228,7 +242,8 @@ printf "\tDeleting a non-existant user (UserZero)\n"
 if [[ $(curl -s -k -o results.txt -X DELETE -w '%{http_code}' ${host}user/RemoveUser?username=UserZero -H 'ApiKey: '$UserOneAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "false" != $var ]]
+	Expected="false"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -251,7 +266,8 @@ else
     if [[ $(curl -s -k -o results.txt -X DELETE -w '%{http_code}' ${host}user/RemoveUser?username=UserTwo -H 'ApiKey: '$UserTwoAPIKey) == 200 ]]
     then 
     	var=$(<results.txt)
-    	if [[ "true" != $var ]]
+    	Expected="true"
+    	if [[ $Expected != $var ]]
     	then
             printf "Failed \n"
     		kill -1 $$
@@ -277,7 +293,8 @@ printf "\tChanging UserTwo to Admin\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey -H 'Content-Type: application/json' -d '{"username": "UserTwo","role": "Admin"}') == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "DONE" != $var ]]
+	Expected="DONE"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -291,7 +308,8 @@ printf "\tChanging UserTwo to User\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey -H 'Content-Type: application/json' -d '{"username": "UserTwo","role": "User"}') == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "DONE" != $var ]]
+	Expected="DONE"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -305,7 +323,8 @@ printf "\tChanging UserTwo to User (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey'h' -H 'Content-Type: application/json' -d '{"username": "UserTwo","role": "User"}') == 401 ]]
 then 
     var=$(<results.txt)
-    if [[ "\"Unauthorized. Admin access only."\" != $var ]]
+    Expected="\"Unauthorized. Admin access only."\"
+    if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -319,7 +338,8 @@ printf "\tChanging UserTwo to Admin (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey'h' -H 'Content-Type: application/json' -d '{"username": "UserTwo","role": "Admin"}') == 401 ]]
 then 
     var=$(<results.txt)
-    if [[ "\"Unauthorized. Admin access only."\" != $var ]]
+    Expected="\"Unauthorized. Admin access only."\"
+    if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -333,7 +353,8 @@ printf "\tChanging non-existent (UserZero) to User\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey -H 'Content-Type: application/json' -d '{"username": "UserZero","role": "User"}') == 400 ]]
 then 
 	var=$(<results.txt)
-	if [[ "NOT DONE: Username does not exist" != $var ]]
+	Expected="NOT DONE: Username does not exist"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -347,7 +368,8 @@ printf "\tChanging non-existant (UserZero) to Admin\n"
 if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey -H 'Content-Type: application/json' -d '{"username": "UserZero","role": "Admin"}') == 400 ]]
 then 
 	var=$(<results.txt)
-	if [[ "NOT DONE: Username does not exist" != $var ]]
+	Expected="NOT DONE: Username does not exist"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -375,9 +397,10 @@ printf "\tChanging role to King\n"
  if [[ $(curl -s -k -o results.txt -X POST -w '%{http_code}' ${host}user/ChangeRole -H 'ApiKey: '$UserOneAPIKey -H 'Content-Type: application/json' -d '{"username": "UserTwo","role": "King"}') == 400 ]]
  then 
     var=$(<results.txt)
- 	if [[ "NOT DONE: Role does not exist" != $var ]]
+    Expected="NOT DONE: Role does not exist"
+	if [[ $Expected != $var ]]
  	then
-         printf "Failed \n"
+        printf "Failed \n"
  		kill -1 $$
     fi;  
     else
@@ -391,7 +414,8 @@ printf "\tProtected Hello (Admin)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/hello -H 'ApiKey: '$UserOneAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "Hello UserOne" != $var ]]
+	Expected="Hello UserOne"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -405,7 +429,8 @@ printf "\tProtected Hello (User)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/hello -H 'ApiKey: '$UserTwoAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-    if [[ "Hello UserTwo" != $var ]]
+	Expected="Hello UserTwo"
+	if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -419,7 +444,8 @@ printf "\tProtected Hello (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/hello -H 'ApiKey: '$UserOneAPIKey'h') == 401 ]]
 then 
 	var=$(<results.txt)
-    if [[ "\"Unauthorized. Check ApiKey in Header is correct."\" != $var ]]
+	Expected="\"Unauthorized. Check ApiKey in Header is correct."\"
+    if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -433,7 +459,8 @@ printf "\tProtected sha1 hello (Admin)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha1?message=hello -H 'ApiKey: '$UserOneAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "AAF4C61DDCC5E8A2DABEDE0F3B482CD9AEA9434D" != $var ]]
+	Expected="AAF4C61DDCC5E8A2DABEDE0F3B482CD9AEA9434D"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -447,7 +474,8 @@ printf "\tProtected sha1 hello (User)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha1?message=hello -H 'ApiKey: '$UserTwoAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "AAF4C61DDCC5E8A2DABEDE0F3B482CD9AEA9434D" != $var ]]
+	Expected="AAF4C61DDCC5E8A2DABEDE0F3B482CD9AEA9434D"
+    if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -462,7 +490,8 @@ printf "\tProtected sha1 hello (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha1?message=hello -H 'ApiKey: '$APIKey'h') == 401 ]]
 then 
 	var=$(<results.txt)
-    if [[ "\"Unauthorized. Check ApiKey in Header is correct."\" != $var ]]
+	Expected="\"Unauthorized. Check ApiKey in Header is correct."\"
+    if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -476,7 +505,8 @@ printf "\tProtected sha256 hello (Admin)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha256?message=hello -H 'ApiKey: '$UserOneAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "2CF24DBA5FB0A30E26E83B2AC5B9E29E1B161E5C1FA7425E73043362938B9824" != $var ]]
+	Expected="2CF24DBA5FB0A30E26E83B2AC5B9E29E1B161E5C1FA7425E73043362938B9824"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -490,7 +520,8 @@ printf "\tProtected sha256 hello (User)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha256?message=hello -H 'ApiKey: '$UserTwoAPIKey) == 200 ]]
 then 
 	var=$(<results.txt)
-	if [[ "2CF24DBA5FB0A30E26E83B2AC5B9E29E1B161E5C1FA7425E73043362938B9824" != $var ]]
+	Expected="2CF24DBA5FB0A30E26E83B2AC5B9E29E1B161E5C1FA7425E73043362938B9824"
+	if [[ $Expected != $var ]]
 	then
         printf "Failed \n"
 		kill -1 $$
@@ -505,7 +536,8 @@ printf "\tProtected sha256 hello (Unauthorized)\n"
 if [[ $(curl -s -k -o results.txt -w '%{http_code}' ${host}protected/sha256?message=hello -H 'ApiKey: '$APIKey'h') == 401 ]]
 then 
 	var=$(<results.txt)
-    if [[ "\"Unauthorized. Check ApiKey in Header is correct."\" != $var ]]
+	Expected="\"Unauthorized. Check ApiKey in Header is correct."\"
+    if [[ $Expected != $var ]]
     then
         printf "Failed \n"
         kill -1 $$
@@ -548,10 +580,9 @@ fi;
 if [[ $local == 1 ]] 
 then
 	kill $PROC_ID
+	printf "Tests passed\n"
 else
 	./$(basename $0) 1 && exit
 fi
-
-printf "Tests passed\n"
 
 #$(curl -k -i -X OPTIONS http://distsysacw.azurewebsites.net/8285836/Api/protected/hello -H 'ApiKey: 1414aab0-fb56-4371-9686-6bd74238524d')
